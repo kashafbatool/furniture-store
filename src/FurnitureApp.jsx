@@ -11,15 +11,26 @@ import {
   Clock,
   Store,
   Truck,
+  X,
 } from 'lucide-react';
 
 const FurnitureApp = () => {
   const [language, setLanguage] = useState('en');
   const [activeTab, setActiveTab] = useState('all');
   const [activeSection, setActiveSection] = useState('browse');
-  const [cart] = useState([]);
+  const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [filters, setFilters] = useState({
+    minPrice: 0,
+    maxPrice: 150000,
+    materials: [],
+    styles: [],
+    colors: [],
+    inStockOnly: false,
+  });
 
   const translations = {
     en: {
@@ -63,6 +74,24 @@ const FurnitureApp = () => {
       homeDelivery: 'Home Delivery',
       free: 'Free',
       contact: 'Contact',
+      featuredCollections: 'Featured Collections',
+      seasonalSale: 'Seasonal Sale',
+      shopSale: 'Shop the Sale',
+      newArrivals: 'New Arrivals',
+      recommendations: 'Recommended for You',
+      lookbook: 'Inspiration Lookbook',
+      shopTheLook: 'Shop the Look',
+      filters: 'Filters',
+      priceRange: 'Price Range',
+      material: 'Material',
+      style: 'Style',
+      color: 'Color',
+      inStockOnly: 'In stock only',
+      dimensions: 'Dimensions',
+      viewDetails: 'View Details',
+      addToCart: 'Add to Cart',
+      scheduleVisit: 'Schedule Showroom Visit',
+      nextSteps: 'Next Steps',
     },
     ur: {
       appName: 'الوی نیلامی',
@@ -105,6 +134,24 @@ const FurnitureApp = () => {
       homeDelivery: 'گھر پر ترسیل',
       free: 'مفت',
       contact: 'رابطہ کریں',
+      featuredCollections: 'نمایاں مجموعے',
+      seasonalSale: 'موسمی سیل',
+      shopSale: 'سیل دیکھیں',
+      newArrivals: 'نئی آمد',
+      recommendations: 'آپ کے لیے تجویز کردہ',
+      lookbook: 'انسپائریشن لک بُک',
+      shopTheLook: 'یہ انداز خریدیں',
+      filters: 'فلٹرز',
+      priceRange: 'قیمت کی حد',
+      material: 'مواد',
+      style: 'انداز',
+      color: 'رنگ',
+      inStockOnly: 'صرف دستیاب اشیاء',
+      dimensions: 'سائز',
+      viewDetails: 'تفصیلات دیکھیں',
+      addToCart: 'کارٹ میں شامل کریں',
+      scheduleVisit: 'شو روم وزٹ شیڈول کریں',
+      nextSteps: 'اگلے مراحل',
     },
   };
 
@@ -116,6 +163,8 @@ const FurnitureApp = () => {
       name: 'Modern Velvet Sofa',
       nameUr: 'جدید مخملی صوفہ',
       category: 'sofa',
+      subcategory: 'sectionals',
+      room: 'living',
       type: 'auction',
       currentBid: 45000,
       image:
@@ -123,6 +172,12 @@ const FurnitureApp = () => {
       vendor: '+92 300 1234567',
       endsIn: '2d 5h',
       description: 'Luxurious velvet upholstery with solid wood frame',
+      dimensions: '90\" W x 38\" D x 34\" H',
+      material: 'Velvet',
+      style: 'Modern',
+      color: 'Navy',
+      inStock: true,
+      isNew: true,
       deliveryOptions: { pickup: true, delivery: true, deliveryFee: 2000 },
     },
     {
@@ -130,12 +185,19 @@ const FurnitureApp = () => {
       name: 'Dining Table Set',
       nameUr: 'کھانے کی میز سیٹ',
       category: 'table',
+      subcategory: 'dining',
+      room: 'dining',
       type: 'fixed',
       price: 85000,
       image:
         'https://images.unsplash.com/photo-1617806118233-18e1de247200?w=800&auto=format&fit=crop',
       vendor: '+92 321 9876543',
       description: '6-seater solid wood dining set with chairs',
+      dimensions: '72\" W x 40\" D x 30\" H',
+      material: 'Oak',
+      style: 'Contemporary',
+      color: 'Walnut',
+      inStock: true,
       deliveryOptions: { pickup: true, delivery: true, deliveryFee: 0 },
     },
     {
@@ -143,12 +205,19 @@ const FurnitureApp = () => {
       name: 'Executive Office Chair',
       nameUr: 'ایگزیکٹو آفس چیئر',
       category: 'chair',
+      subcategory: 'office',
+      room: 'office',
       type: 'fixed',
       price: 22000,
       image:
         'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=800&auto=format&fit=crop',
       vendor: '+92 333 5551234',
       description: 'Ergonomic leather office chair with lumbar support',
+      dimensions: '28\" W x 28\" D x 48\" H',
+      material: 'Leather',
+      style: 'Executive',
+      color: 'Black',
+      inStock: false,
       deliveryOptions: { pickup: true, delivery: true, deliveryFee: 500 },
     },
     {
@@ -156,6 +225,8 @@ const FurnitureApp = () => {
       name: 'King Size Bed',
       nameUr: 'کنگ سائز بستر',
       category: 'bed',
+      subcategory: 'bed-frames',
+      room: 'bedroom',
       type: 'auction',
       currentBid: 95000,
       image:
@@ -163,6 +234,11 @@ const FurnitureApp = () => {
       vendor: '+92 345 7778888',
       endsIn: '1d 12h',
       description: 'Premium wooden bed frame with headboard',
+      dimensions: '78\" W x 86\" D x 52\" H',
+      material: 'Teak',
+      style: 'Classic',
+      color: 'Honey',
+      inStock: true,
       deliveryOptions: { pickup: true, delivery: true, deliveryFee: 3000 },
     },
     {
@@ -170,12 +246,19 @@ const FurnitureApp = () => {
       name: 'Storage Cabinet',
       nameUr: 'اسٹوریج الماری',
       category: 'storage',
+      subcategory: 'cabinets',
+      room: 'living',
       type: 'fixed',
       price: 35000,
       image:
         'https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?w=800&auto=format&fit=crop',
       vendor: '+92 300 4445566',
       description: 'Multi-purpose storage cabinet with shelves',
+      dimensions: '60\" W x 18\" D x 72\" H',
+      material: 'Engineered Wood',
+      style: 'Minimal',
+      color: 'White',
+      inStock: true,
       deliveryOptions: { pickup: true, delivery: true, deliveryFee: 1500 },
     },
     {
@@ -183,6 +266,8 @@ const FurnitureApp = () => {
       name: 'Accent Chair',
       nameUr: 'ایکسنٹ چیئر',
       category: 'chair',
+      subcategory: 'accent',
+      room: 'living',
       type: 'auction',
       currentBid: 18000,
       image:
@@ -190,6 +275,11 @@ const FurnitureApp = () => {
       vendor: '+92 311 2223334',
       endsIn: '3d 8h',
       description: 'Stylish accent chair perfect for living rooms',
+      dimensions: '30\" W x 32\" D x 36\" H',
+      material: 'Bouclé',
+      style: 'Scandinavian',
+      color: 'Cream',
+      inStock: true,
       deliveryOptions: { pickup: true, delivery: true, deliveryFee: 500 },
     },
   ]);
@@ -203,17 +293,154 @@ const FurnitureApp = () => {
     { key: 'storage', icon: '🗄️' },
   ];
 
-  const filteredItems =
-    activeTab === 'all'
-      ? furnitureItems
-      : furnitureItems.filter((item) => item.category === activeTab);
+  const categoryHierarchy = [
+    {
+      key: 'living',
+      title: { en: 'Living Room', ur: 'لونگ روم' },
+      groups: [
+        { label: { en: 'Sofas', ur: 'صوفے' }, items: ['sectionals', 'loveseats'] },
+        { label: { en: 'Chairs', ur: 'کرسیاں' }, items: ['accent', 'recliners'] },
+        { label: { en: 'Storage', ur: 'ذخیرہ' }, items: ['cabinets', 'media units'] },
+      ],
+    },
+    {
+      key: 'dining',
+      title: { en: 'Dining Room', ur: 'ڈائننگ روم' },
+      groups: [
+        { label: { en: 'Tables', ur: 'میزیں' }, items: ['dining', 'extendable'] },
+        { label: { en: 'Seating', ur: 'بیٹھنے کی جگہ' }, items: ['side chairs'] },
+      ],
+    },
+    {
+      key: 'bedroom',
+      title: { en: 'Bedroom', ur: 'بیڈ روم' },
+      groups: [
+        { label: { en: 'Beds', ur: 'بستر' }, items: ['bed-frames', 'storage beds'] },
+        { label: { en: 'Dressers', ur: 'ڈریسرز' }, items: ['dressers', 'nightstands'] },
+      ],
+    },
+    {
+      key: 'office',
+      title: { en: 'Home Office', ur: 'ہوم آفس' },
+      groups: [
+        { label: { en: 'Chairs', ur: 'کرسیاں' }, items: ['office', 'ergonomic'] },
+        { label: { en: 'Desks', ur: 'ڈیسک' }, items: ['writing desks', 'standing desks'] },
+      ],
+    },
+  ];
+
+  const lookbookScenes = [
+    {
+      id: 'urban-lounge',
+      title: { en: 'Urban Lounge', ur: 'اربن لاؤنج' },
+      description: {
+        en: 'Layer modern textures with deep colors for a cozy statement.',
+        ur: 'گہرے رنگوں کے ساتھ جدید ساختیں ملا کر آرام دہ انداز بنائیں۔',
+      },
+      image:
+        'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=1200&auto=format&fit=crop',
+      itemIds: [1, 6, 5],
+    },
+    {
+      id: 'warm-dining',
+      title: { en: 'Warm Dining', ur: 'گرم ڈائننگ' },
+      description: {
+        en: 'Natural wood and soft lighting for gatherings.',
+        ur: 'قدرتی لکڑی اور نرم روشنی کے ساتھ اجتماع کے لیے بہترین۔',
+      },
+      image:
+        'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=1200&auto=format&fit=crop',
+      itemIds: [2],
+    },
+  ];
+
+  const filterOptions = {
+    materials: [...new Set(furnitureItems.map((item) => item.material))],
+    styles: [...new Set(furnitureItems.map((item) => item.style))],
+    colors: [...new Set(furnitureItems.map((item) => item.color))],
+  };
+
+  const filteredItems = furnitureItems.filter((item) => {
+    const price = item.type === 'auction' ? item.currentBid : item.price;
+    const matchesTab = activeTab === 'all' || item.category === activeTab;
+    const matchesSearch =
+      searchQuery.trim().length === 0 ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesPrice = price >= filters.minPrice && price <= filters.maxPrice;
+    const matchesMaterial =
+      filters.materials.length === 0 || filters.materials.includes(item.material);
+    const matchesStyle = filters.styles.length === 0 || filters.styles.includes(item.style);
+    const matchesColor = filters.colors.length === 0 || filters.colors.includes(item.color);
+    const matchesStock = !filters.inStockOnly || item.inStock;
+
+    return (
+      matchesTab &&
+      matchesSearch &&
+      matchesPrice &&
+      matchesMaterial &&
+      matchesStyle &&
+      matchesColor &&
+      matchesStock
+    );
+  });
   const favoriteItems = furnitureItems.filter((item) => favorites.includes(item.id));
   const recentItems = furnitureItems.filter((item) => recentlyViewed.includes(item.id));
+  const newArrivals = furnitureItems.filter((item) => item.isNew);
+  const recommendedItems =
+    recentlyViewed.length > 0
+      ? furnitureItems.filter((item) =>
+          recentlyViewed.some((id) => {
+            const viewed = furnitureItems.find((viewedItem) => viewedItem.id === id);
+            return viewed && viewed.category === item.category;
+          })
+        )
+      : furnitureItems.slice(0, 3);
+
+  const featuredCollections = [
+    {
+      id: 'living-collection',
+      title: { en: 'Living Room Luxe', ur: 'لونگ روم لگژری' },
+      description: { en: 'Layered seating and warm woods.', ur: 'ملٹی سیٹنگ اور گرم لکڑی۔' },
+      image:
+        'https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=1200&auto=format&fit=crop',
+    },
+    {
+      id: 'sleep-collection',
+      title: { en: 'Sleep Sanctuary', ur: 'پرسکون نیند' },
+      description: { en: 'Soft textures for restful nights.', ur: 'پرسکون راتوں کے لیے نرم انداز۔' },
+      image:
+        'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=1200&auto=format&fit=crop',
+    },
+    {
+      id: 'work-collection',
+      title: { en: 'Office Essentials', ur: 'آفس ضروریات' },
+      description: { en: 'Ergonomic comfort for focus.', ur: 'توجہ کے لیے آرام دہ سپورٹ۔' },
+      image:
+        'https://images.unsplash.com/photo-1487014679447-9f8336841d58?w=1200&auto=format&fit=crop',
+    },
+  ];
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
     );
+  };
+
+  const toggleFilterValue = (key, value) => {
+    setFilters((prev) => {
+      const values = prev[key];
+      return {
+        ...prev,
+        [key]: values.includes(value)
+          ? values.filter((item) => item !== value)
+          : [...values, value],
+      };
+    });
+  };
+
+  const handleAddToCart = (itemId) => {
+    setCart((prev) => (prev.includes(itemId) ? prev : [...prev, itemId]));
   };
 
   const addToRecentlyViewed = (id) => {
@@ -225,7 +452,10 @@ const FurnitureApp = () => {
 
   const FurnitureCard = ({ item }) => (
     <div
-      onClick={() => addToRecentlyViewed(item.id)}
+      onClick={() => {
+        addToRecentlyViewed(item.id);
+        setSelectedItem(item);
+      }}
       className="group cursor-pointer overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-300 hover:shadow-xl"
     >
       <div className="relative overflow-hidden">
@@ -418,6 +648,8 @@ const FurnitureApp = () => {
             <input
               type="text"
               placeholder={t.search}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               className="w-full rounded-lg bg-gray-50 py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -463,10 +695,67 @@ const FurnitureApp = () => {
 
       {activeSection === 'browse' && (
         <div className="mx-auto max-w-7xl px-4 py-6">
-          <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-medium text-white shadow-lg transition hover:from-blue-700 hover:to-blue-800 md:w-auto">
-            <Plus className="h-5 w-5" />
-            {t.addListing}
-          </button>
+          <div className="grid gap-6 lg:grid-cols-[1.3fr,0.7fr]">
+            <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 p-8 text-white shadow-xl">
+              <p className="text-sm uppercase tracking-[0.2em] text-blue-200">{t.seasonalSale}</p>
+              <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
+                {language === 'en'
+                  ? 'Refresh your home with curated auction finds.'
+                  : 'اپنے گھر کو منتخب نیلامی اشیاء سے تازہ بنائیں۔'}
+              </h2>
+              <p className="mt-3 max-w-xl text-blue-100">
+                {language === 'en'
+                  ? 'Discover premium pieces, limited-time deals, and new arrivals tailored to your taste.'
+                  : 'پریمیم اشیاء، محدود وقت کی ڈیلز، اور آپ کی پسند کے مطابق نئی آمد دیکھیں۔'}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-blue-900 shadow hover:bg-blue-50">
+                  {t.shopSale}
+                </button>
+                <button className="flex items-center gap-2 rounded-lg border border-white/40 px-6 py-3 text-sm font-semibold text-white/90 hover:border-white hover:text-white">
+                  <Plus className="h-4 w-4" />
+                  {t.addListing}
+                </button>
+              </div>
+            </div>
+            <div className="rounded-2xl bg-white p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">{t.newArrivals}</h3>
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
+                  {newArrivals.length} {language === 'en' ? 'items' : 'اشیاء'}
+                </span>
+              </div>
+              <div className="mt-4 space-y-4">
+                {newArrivals.slice(0, 3).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      addToRecentlyViewed(item.id);
+                      setSelectedItem(item);
+                    }}
+                    className="flex w-full items-center gap-4 rounded-xl border border-gray-100 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50/40"
+                  >
+                    <img
+                      src={item.image}
+                      alt={language === 'en' ? item.name : item.nameUr}
+                      className="h-16 w-20 rounded-lg object-cover"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold">
+                        {language === 'en' ? item.name : item.nameUr}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {item.type === 'auction'
+                          ? `${t.currentBid} · PKR ${item.currentBid.toLocaleString()}`
+                          : `${t.price} · PKR ${item.price.toLocaleString()}`}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -494,12 +783,278 @@ const FurnitureApp = () => {
       <div className="mx-auto max-w-7xl px-4 pb-12">
         {activeSection === 'browse' && (
           <>
+            <section className="mb-10">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold">{t.featuredCollections}</h2>
+              </div>
+              <div className="grid gap-6 md:grid-cols-3">
+                {featuredCollections.map((collection) => (
+                  <div
+                    key={collection.id}
+                    className="group overflow-hidden rounded-2xl bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-xl"
+                  >
+                    <div className="relative">
+                      <img
+                        src={collection.image}
+                        alt={language === 'en' ? collection.title.en : collection.title.ur}
+                        className="h-48 w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-5">
+                      <h3 className="text-lg font-semibold">
+                        {language === 'en' ? collection.title.en : collection.title.ur}
+                      </h3>
+                      <p className="mt-2 text-sm text-gray-600">
+                        {language === 'en'
+                          ? collection.description.en
+                          : collection.description.ur}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="mb-10 grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
+              <div className="rounded-2xl bg-white p-6 shadow-lg">
+                <h3 className="text-lg font-semibold">
+                  {language === 'en' ? 'Categories Menu' : 'زمرہ جات'}
+                </h3>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  {categoryHierarchy.map((category) => (
+                    <div
+                      key={category.key}
+                      className="rounded-xl border border-gray-100 bg-gray-50/60 p-4"
+                    >
+                      <h4 className="text-sm font-semibold text-gray-700">
+                        {language === 'en' ? category.title.en : category.title.ur}
+                      </h4>
+                      <div className="mt-2 space-y-2 text-xs text-gray-600">
+                        {category.groups.map((group) => (
+                          <div key={group.label.en} className="flex flex-wrap gap-2">
+                            <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+                              {language === 'en' ? group.label.en : group.label.ur}
+                            </span>
+                            {group.items.map((item) => (
+                              <span key={item} className="text-gray-500">
+                                {item}
+                              </span>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-white p-6 shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">{t.filters}</h3>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFilters({
+                        minPrice: 0,
+                        maxPrice: 150000,
+                        materials: [],
+                        styles: [],
+                        colors: [],
+                        inStockOnly: false,
+                      })
+                    }
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                  >
+                    {language === 'en' ? 'Reset' : 'ری سیٹ'}
+                  </button>
+                </div>
+                <div className="space-y-4 text-sm text-gray-600">
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.priceRange}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="0"
+                        max="150000"
+                        value={filters.minPrice}
+                        onChange={(event) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            minPrice: Number(event.target.value),
+                          }))
+                        }
+                        className="w-full accent-blue-600"
+                      />
+                      <span className="text-xs font-semibold">PKR {filters.minPrice}</span>
+                    </div>
+                    <div className="mt-2 flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="0"
+                        max="150000"
+                        value={filters.maxPrice}
+                        onChange={(event) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            maxPrice: Number(event.target.value),
+                          }))
+                        }
+                        className="w-full accent-blue-600"
+                      />
+                      <span className="text-xs font-semibold">PKR {filters.maxPrice}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.material}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {filterOptions.materials.map((material) => (
+                        <button
+                          key={material}
+                          type="button"
+                          onClick={() => toggleFilterValue('materials', material)}
+                          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                            filters.materials.includes(material)
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {material}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.style}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {filterOptions.styles.map((style) => (
+                        <button
+                          key={style}
+                          type="button"
+                          onClick={() => toggleFilterValue('styles', style)}
+                          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                            filters.styles.includes(style)
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {style}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.color}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {filterOptions.colors.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => toggleFilterValue('colors', color)}
+                          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                            filters.colors.includes(color)
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {color}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={filters.inStockOnly}
+                      onChange={(event) =>
+                        setFilters((prev) => ({ ...prev, inStockOnly: event.target.checked }))
+                      }
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                    />
+                    {t.inStockOnly}
+                  </label>
+                </div>
+              </div>
+            </section>
+
             <h2 className="mb-6 text-2xl font-bold">{t.featured}</h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredItems.map((item) => (
                 <FurnitureCard key={item.id} item={item} />
               ))}
             </div>
+
+            <section className="mt-10">
+              <h2 className="mb-6 text-2xl font-bold">{t.recommendations}</h2>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {recommendedItems.map((item) => (
+                  <FurnitureCard key={item.id} item={item} />
+                ))}
+              </div>
+            </section>
+
+            <section className="mt-10">
+              <h2 className="mb-6 text-2xl font-bold">{t.newArrivals}</h2>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {newArrivals.map((item) => (
+                  <FurnitureCard key={item.id} item={item} />
+                ))}
+              </div>
+            </section>
+
+            <section className="mt-10">
+              <h2 className="mb-6 text-2xl font-bold">{t.lookbook}</h2>
+              <div className="grid gap-6 lg:grid-cols-2">
+                {lookbookScenes.map((scene) => (
+                  <div key={scene.id} className="overflow-hidden rounded-2xl bg-white shadow-lg">
+                    <img
+                      src={scene.image}
+                      alt={language === 'en' ? scene.title.en : scene.title.ur}
+                      className="h-60 w-full object-cover"
+                    />
+                    <div className="space-y-3 p-5">
+                      <h3 className="text-lg font-semibold">
+                        {language === 'en' ? scene.title.en : scene.title.ur}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {language === 'en' ? scene.description.en : scene.description.ur}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {scene.itemIds.map((id) => {
+                          const item = furnitureItems.find((piece) => piece.id === id);
+                          if (!item) {
+                            return null;
+                          }
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                addToRecentlyViewed(item.id);
+                                setSelectedItem(item);
+                              }}
+                              className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-200"
+                            >
+                              {language === 'en' ? item.name : item.nameUr}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <button className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700">
+                        {t.shopTheLook}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </>
         )}
         {activeSection === 'favorites' && (
@@ -535,6 +1090,134 @@ const FurnitureApp = () => {
           </>
         )}
       </div>
+
+      {selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setSelectedItem(null)}
+            role="button"
+            tabIndex={0}
+          />
+          <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+            <div className="grid gap-6 p-6 lg:grid-cols-[1.1fr,0.9fr]">
+              <div>
+                <img
+                  src={selectedItem.image}
+                  alt={language === 'en' ? selectedItem.name : selectedItem.nameUr}
+                  className="h-72 w-full rounded-xl object-cover"
+                />
+                <div className="mt-4 space-y-2 text-sm text-gray-600">
+                  <p>
+                    <span className="font-semibold text-gray-700">{t.dimensions}:</span>{' '}
+                    {selectedItem.dimensions}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-gray-700">{t.material}:</span>{' '}
+                    {selectedItem.material}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-gray-700">{t.style}:</span>{' '}
+                    {selectedItem.style}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-gray-700">{t.color}:</span>{' '}
+                    {selectedItem.color}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-2xl font-semibold">
+                        {language === 'en' ? selectedItem.name : selectedItem.nameUr}
+                      </h2>
+                      <p className="mt-2 text-sm text-gray-600">{selectedItem.description}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedItem(null)}
+                      className="rounded-full bg-gray-100 p-2 text-gray-500 transition hover:bg-gray-200"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="mt-4 rounded-xl bg-gray-50 p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-500">
+                      {selectedItem.type === 'auction' ? t.currentBid : t.price}
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-gray-900">
+                      PKR{' '}
+                      {selectedItem.type === 'auction'
+                        ? selectedItem.currentBid.toLocaleString()
+                        : selectedItem.price.toLocaleString()}
+                    </p>
+                    {selectedItem.endsIn && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {t.endsIn}: {selectedItem.endsIn}
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-gray-500">
+                      {selectedItem.inStock
+                        ? language === 'en'
+                          ? 'Available for delivery'
+                          : 'ترسیل دستیاب ہے'
+                        : language === 'en'
+                          ? 'Made to order'
+                          : 'آرڈر پر دستیاب'}
+                    </p>
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Phone className="h-4 w-4" />
+                      <span>{selectedItem.vendor}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {selectedItem.deliveryOptions?.pickup && (
+                        <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">
+                          {t.inStorePickup}
+                        </span>
+                      )}
+                      {selectedItem.deliveryOptions?.delivery && (
+                        <span className="rounded-full bg-green-50 px-3 py-1 text-green-700">
+                          {t.homeDelivery}{' '}
+                          {selectedItem.deliveryOptions.deliveryFee === 0
+                            ? `(${t.free})`
+                            : `(PKR ${selectedItem.deliveryOptions.deliveryFee})`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-5">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.nextSteps}
+                    </p>
+                    <div className="mt-3 grid gap-2 text-sm text-gray-700">
+                      <button
+                        type="button"
+                        onClick={() => handleAddToCart(selectedItem.id)}
+                        className="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
+                      >
+                        {t.addToCart}
+                      </button>
+                      <button className="w-full rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50">
+                        {selectedItem.type === 'auction' ? t.placeBid : t.buyNow}
+                      </button>
+                      <button className="w-full rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50">
+                        {t.scheduleVisit}
+                      </button>
+                      <button className="w-full rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 transition hover:border-gray-400 hover:bg-gray-50">
+                        {t.contact}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
