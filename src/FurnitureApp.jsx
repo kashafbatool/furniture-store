@@ -23,6 +23,7 @@ const FurnitureApp = () => {
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [filters, setFilters] = useState({
     minPrice: 0,
     maxPrice: 150000,
@@ -92,6 +93,12 @@ const FurnitureApp = () => {
       addToCart: 'Add to Cart',
       scheduleVisit: 'Schedule Showroom Visit',
       nextSteps: 'Next Steps',
+      cartTitle: 'Your Cart',
+      cartEmpty: 'Your cart is empty',
+      cartEmptyDesc: 'Add items to your cart to review them here.',
+      remove: 'Remove',
+      cartTotal: 'Cart Total',
+      checkout: 'Proceed to Checkout',
     },
     ur: {
       appName: 'الوی نیلامی',
@@ -152,6 +159,12 @@ const FurnitureApp = () => {
       addToCart: 'کارٹ میں شامل کریں',
       scheduleVisit: 'شو روم وزٹ شیڈول کریں',
       nextSteps: 'اگلے مراحل',
+      cartTitle: 'آپ کا کارٹ',
+      cartEmpty: 'آپ کا کارٹ خالی ہے',
+      cartEmptyDesc: 'آئٹمز کو کارٹ میں شامل کریں تاکہ یہاں دیکھ سکیں۔',
+      remove: 'ہٹائیں',
+      cartTotal: 'کارٹ ٹوٹل',
+      checkout: 'چیک آؤٹ کریں',
     },
   };
 
@@ -443,6 +456,18 @@ const FurnitureApp = () => {
     setCart((prev) => (prev.includes(itemId) ? prev : [...prev, itemId]));
   };
 
+  const handleRemoveFromCart = (itemId) => {
+    setCart((prev) => prev.filter((id) => id !== itemId));
+  };
+
+  const cartItems = cart
+    .map((id) => furnitureItems.find((item) => item.id === id))
+    .filter(Boolean);
+  const cartTotal = cartItems.reduce((total, item) => {
+    const price = item.type === 'auction' ? item.currentBid : item.price;
+    return total + price;
+  }, 0);
+
   const addToRecentlyViewed = (id) => {
     setRecentlyViewed((prev) => {
       const filtered = prev.filter((itemId) => itemId !== id);
@@ -633,7 +658,10 @@ const FurnitureApp = () => {
               >
                 {language === 'en' ? 'اردو' : 'English'}
               </button>
-              <button className="relative rounded-lg p-2 transition hover:bg-gray-100">
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative rounded-lg p-2 transition hover:bg-gray-100"
+              >
                 <ShoppingCart className="h-6 w-6" />
                 {cart.length > 0 && (
                   <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
@@ -1215,6 +1243,81 @@ const FurnitureApp = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setIsCartOpen(false)}
+            role="button"
+            tabIndex={0}
+          />
+          <div className="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">{t.cartTitle}</h2>
+              <button
+                type="button"
+                onClick={() => setIsCartOpen(false)}
+                className="rounded-full bg-gray-100 p-2 text-gray-500 transition hover:bg-gray-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {cartItems.length === 0 ? (
+              <EmptyState icon={ShoppingCart} title={t.cartEmpty} description={t.cartEmptyDesc} />
+            ) : (
+              <div className="mt-4 space-y-4">
+                {cartItems.map((item) => {
+                  const itemPrice = item.type === 'auction' ? item.currentBid : item.price;
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-4 rounded-xl border border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={item.image}
+                          alt={language === 'en' ? item.name : item.nameUr}
+                          className="h-20 w-24 rounded-lg object-cover"
+                        />
+                        <div>
+                          <p className="text-sm font-semibold">
+                            {language === 'en' ? item.name : item.nameUr}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {item.type === 'auction' ? t.currentBid : t.price}
+                          </p>
+                          <p className="text-sm font-semibold text-gray-900">
+                            PKR {itemPrice.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFromCart(item.id)}
+                        className="text-xs font-semibold text-red-500 hover:text-red-600"
+                      >
+                        {t.remove}
+                      </button>
+                    </div>
+                  );
+                })}
+                <div className="flex flex-col gap-4 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-gray-500">{t.cartTotal}</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      PKR {cartTotal.toLocaleString()}
+                    </p>
+                  </div>
+                  <button className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                    {t.checkout}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
