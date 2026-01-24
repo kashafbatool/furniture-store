@@ -85,5 +85,3 @@ Toggle between **English** and **Urdu** in the header. The UI flips to **RTL** a
 - `npm run preview` – preview the production build
 
 ---
-
-If you'd like, I can also add a CONTRIBUTING guide, CI checks, or deployment instructions (Vercel/Netlify).
