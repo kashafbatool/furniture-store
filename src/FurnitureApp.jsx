@@ -27,9 +27,11 @@ const FurnitureApp = () => {
   const [filters, setFilters] = useState({
     minPrice: 0,
     maxPrice: 150000,
-    materials: [],
-    styles: [],
-    colors: [],
+    material: 'all',
+    style: 'all',
+    color: 'all',
+    room: 'all',
+    subcategory: 'all',
     inStockOnly: false,
   });
 
@@ -88,6 +90,9 @@ const FurnitureApp = () => {
       style: 'Style',
       color: 'Color',
       inStockOnly: 'In stock only',
+      categoriesMenu: 'Categories Menu',
+      room: 'Room',
+      subcategory: 'Subcategory',
       dimensions: 'Dimensions',
       viewDetails: 'View Details',
       addToCart: 'Add to Cart',
@@ -154,6 +159,9 @@ const FurnitureApp = () => {
       style: 'انداز',
       color: 'رنگ',
       inStockOnly: 'صرف دستیاب اشیاء',
+      categoriesMenu: 'زمرہ جات',
+      room: 'کمرہ',
+      subcategory: 'ذیلی زمرہ',
       dimensions: 'سائز',
       viewDetails: 'تفصیلات دیکھیں',
       addToCart: 'کارٹ میں شامل کریں',
@@ -367,6 +375,14 @@ const FurnitureApp = () => {
     },
   ];
 
+  const roomOptions = categoryHierarchy.map((category) => ({
+    value: category.key,
+    label: language === 'en' ? category.title.en : category.title.ur,
+  }));
+  const subcategoryOptions = categoryHierarchy.flatMap((category) =>
+    category.groups.flatMap((group) => group.items)
+  );
+
   const filterOptions = {
     materials: [...new Set(furnitureItems.map((item) => item.material))],
     styles: [...new Set(furnitureItems.map((item) => item.style))],
@@ -381,10 +397,12 @@ const FurnitureApp = () => {
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesPrice = price >= filters.minPrice && price <= filters.maxPrice;
-    const matchesMaterial =
-      filters.materials.length === 0 || filters.materials.includes(item.material);
-    const matchesStyle = filters.styles.length === 0 || filters.styles.includes(item.style);
-    const matchesColor = filters.colors.length === 0 || filters.colors.includes(item.color);
+    const matchesMaterial = filters.material === 'all' || filters.material === item.material;
+    const matchesStyle = filters.style === 'all' || filters.style === item.style;
+    const matchesColor = filters.color === 'all' || filters.color === item.color;
+    const matchesRoom = filters.room === 'all' || filters.room === item.room;
+    const matchesSubcategory =
+      filters.subcategory === 'all' || filters.subcategory === item.subcategory;
     const matchesStock = !filters.inStockOnly || item.inStock;
 
     return (
@@ -394,6 +412,8 @@ const FurnitureApp = () => {
       matchesMaterial &&
       matchesStyle &&
       matchesColor &&
+      matchesRoom &&
+      matchesSubcategory &&
       matchesStock
     );
   });
@@ -438,18 +458,6 @@ const FurnitureApp = () => {
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
     );
-  };
-
-  const toggleFilterValue = (key, value) => {
-    setFilters((prev) => {
-      const values = prev[key];
-      return {
-        ...prev,
-        [key]: values.includes(value)
-          ? values.filter((item) => item !== value)
-          : [...values, value],
-      };
-    });
   };
 
   const handleAddToCart = (itemId) => {
@@ -843,181 +851,190 @@ const FurnitureApp = () => {
               </div>
             </section>
 
-            <section className="mb-10 grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
-              <div className="rounded-2xl bg-white p-6 shadow-lg">
-                <h3 className="text-lg font-semibold">
-                  {language === 'en' ? 'Categories Menu' : 'زمرہ جات'}
-                </h3>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  {categoryHierarchy.map((category) => (
-                    <div
-                      key={category.key}
-                      className="rounded-xl border border-gray-100 bg-gray-50/60 p-4"
-                    >
-                      <h4 className="text-sm font-semibold text-gray-700">
-                        {language === 'en' ? category.title.en : category.title.ur}
-                      </h4>
-                      <div className="mt-2 space-y-2 text-xs text-gray-600">
-                        {category.groups.map((group) => (
-                          <div key={group.label.en} className="flex flex-wrap gap-2">
-                            <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
-                              {language === 'en' ? group.label.en : group.label.ur}
-                            </span>
-                            {group.items.map((item) => (
-                              <span key={item} className="text-gray-500">
-                                {item}
-                              </span>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+            <section className="mb-10 grid gap-6 lg:grid-cols-[1fr,320px]">
+              <div>
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">{t.featured}</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredItems.map((item) => (
+                    <FurnitureCard key={item.id} item={item} />
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white p-6 shadow-lg">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">{t.filters}</h3>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFilters({
-                        minPrice: 0,
-                        maxPrice: 150000,
-                        materials: [],
-                        styles: [],
-                        colors: [],
-                        inStockOnly: false,
-                      })
-                    }
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                  >
-                    {language === 'en' ? 'Reset' : 'ری سیٹ'}
-                  </button>
-                </div>
-                <div className="space-y-4 text-sm text-gray-600">
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      {t.priceRange}
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="range"
-                        min="0"
-                        max="150000"
-                        value={filters.minPrice}
+              <aside className="space-y-6 lg:sticky lg:top-28">
+                <div className="rounded-2xl bg-white p-6 shadow-lg">
+                  <h3 className="text-lg font-semibold">{t.categoriesMenu}</h3>
+                  <div className="mt-4 space-y-4 text-sm text-gray-600">
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.room}
+                      <select
+                        value={filters.room}
                         onChange={(event) =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            minPrice: Number(event.target.value),
-                          }))
+                          setFilters((prev) => ({ ...prev, room: event.target.value }))
                         }
-                        className="w-full accent-blue-600"
-                      />
-                      <span className="text-xs font-semibold">PKR {filters.minPrice}</span>
-                    </div>
-                    <div className="mt-2 flex items-center gap-3">
-                      <input
-                        type="range"
-                        min="0"
-                        max="150000"
-                        value={filters.maxPrice}
+                        className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
+                      >
+                        <option value="all">{language === 'en' ? 'All rooms' : 'تمام کمرے'}</option>
+                        {roomOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.subcategory}
+                      <select
+                        value={filters.subcategory}
                         onChange={(event) =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            maxPrice: Number(event.target.value),
-                          }))
+                          setFilters((prev) => ({ ...prev, subcategory: event.target.value }))
                         }
-                        className="w-full accent-blue-600"
-                      />
-                      <span className="text-xs font-semibold">PKR {filters.maxPrice}</span>
-                    </div>
+                        className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
+                      >
+                        <option value="all">
+                          {language === 'en' ? 'All subcategories' : 'تمام ذیلی زمرہ'}
+                        </option>
+                        {subcategoryOptions.map((subcategory) => (
+                          <option key={subcategory} value={subcategory}>
+                            {subcategory}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                   </div>
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      {t.material}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {filterOptions.materials.map((material) => (
-                        <button
-                          key={material}
-                          type="button"
-                          onClick={() => toggleFilterValue('materials', material)}
-                          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                            filters.materials.includes(material)
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {material}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      {t.style}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {filterOptions.styles.map((style) => (
-                        <button
-                          key={style}
-                          type="button"
-                          onClick={() => toggleFilterValue('styles', style)}
-                          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                            filters.styles.includes(style)
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {style}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      {t.color}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {filterOptions.colors.map((color) => (
-                        <button
-                          key={color}
-                          type="button"
-                          onClick={() => toggleFilterValue('colors', color)}
-                          className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                            filters.colors.includes(color)
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {color}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={filters.inStockOnly}
-                      onChange={(event) =>
-                        setFilters((prev) => ({ ...prev, inStockOnly: event.target.checked }))
-                      }
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600"
-                    />
-                    {t.inStockOnly}
-                  </label>
                 </div>
-              </div>
-            </section>
 
-            <h2 className="mb-6 text-2xl font-bold">{t.featured}</h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredItems.map((item) => (
-                <FurnitureCard key={item.id} item={item} />
-              ))}
-            </div>
+                <div className="rounded-2xl bg-white p-6 shadow-lg">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">{t.filters}</h3>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFilters({
+                          minPrice: 0,
+                          maxPrice: 150000,
+                          material: 'all',
+                          style: 'all',
+                          color: 'all',
+                          room: 'all',
+                          subcategory: 'all',
+                          inStockOnly: false,
+                        })
+                      }
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                    >
+                      {language === 'en' ? 'Reset' : 'ری سیٹ'}
+                    </button>
+                  </div>
+                  <div className="space-y-4 text-sm text-gray-600">
+                    <div>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        {t.priceRange}
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min="0"
+                          max="150000"
+                          value={filters.minPrice}
+                          onChange={(event) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              minPrice: Number(event.target.value),
+                            }))
+                          }
+                          className="w-full accent-blue-600"
+                        />
+                        <span className="text-xs font-semibold">PKR {filters.minPrice}</span>
+                      </div>
+                      <div className="mt-2 flex items-center gap-3">
+                        <input
+                          type="range"
+                          min="0"
+                          max="150000"
+                          value={filters.maxPrice}
+                          onChange={(event) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              maxPrice: Number(event.target.value),
+                            }))
+                          }
+                          className="w-full accent-blue-600"
+                        />
+                        <span className="text-xs font-semibold">PKR {filters.maxPrice}</span>
+                      </div>
+                    </div>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.material}
+                      <select
+                        value={filters.material}
+                        onChange={(event) =>
+                          setFilters((prev) => ({ ...prev, material: event.target.value }))
+                        }
+                        className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
+                      >
+                        <option value="all">{language === 'en' ? 'All materials' : 'تمام مواد'}</option>
+                        {filterOptions.materials.map((material) => (
+                          <option key={material} value={material}>
+                            {material}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.style}
+                      <select
+                        value={filters.style}
+                        onChange={(event) =>
+                          setFilters((prev) => ({ ...prev, style: event.target.value }))
+                        }
+                        className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
+                      >
+                        <option value="all">{language === 'en' ? 'All styles' : 'تمام انداز'}</option>
+                        {filterOptions.styles.map((style) => (
+                          <option key={style} value={style}>
+                            {style}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {t.color}
+                      <select
+                        value={filters.color}
+                        onChange={(event) =>
+                          setFilters((prev) => ({ ...prev, color: event.target.value }))
+                        }
+                        className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
+                      >
+                        <option value="all">{language === 'en' ? 'All colors' : 'تمام رنگ'}</option>
+                        {filterOptions.colors.map((color) => (
+                          <option key={color} value={color}>
+                            {color}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={filters.inStockOnly}
+                        onChange={(event) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            inStockOnly: event.target.checked,
+                          }))
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                      />
+                      {t.inStockOnly}
+                    </label>
+                  </div>
+                </div>
+              </aside>
+            </section>
 
             <section className="mt-10">
               <h2 className="mb-6 text-2xl font-bold">{t.recommendations}</h2>
