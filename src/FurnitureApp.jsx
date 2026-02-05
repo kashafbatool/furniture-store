@@ -64,10 +64,21 @@ const FurnitureApp = () => {
   const filteredItems = furnitureItems.filter((item) => {
     const price = item.type === 'auction' ? item.currentBid : item.price;
     const matchesTab = activeTab === 'all' || item.category === activeTab;
+
+    // Enhanced search: search in name, description, category, material, style, subcategory, and translated names
+    const searchLower = searchQuery.toLowerCase().trim();
     const matchesSearch =
       searchQuery.trim().length === 0 ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      item.name.toLowerCase().includes(searchLower) ||
+      item.nameUr.includes(searchQuery.trim()) ||
+      item.description.toLowerCase().includes(searchLower) ||
+      item.category.toLowerCase().includes(searchLower) ||
+      item.material.toLowerCase().includes(searchLower) ||
+      item.style.toLowerCase().includes(searchLower) ||
+      item.subcategory.toLowerCase().includes(searchLower) ||
+      // Also match the translated category names (e.g., "chairs" matches "chair")
+      (t[item.category] && t[item.category].toLowerCase().includes(searchLower));
+
     const matchesPrice = price >= filters.minPrice && price <= filters.maxPrice;
     const matchesMaterial = filters.material === 'all' || filters.material === item.material;
     const matchesStyle = filters.style === 'all' || filters.style === item.style;
