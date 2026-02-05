@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 
-const HeroSection = ({ language, t, newArrivals, onItemClick }) => {
+const HeroSection = ({ language, t, newArrivals, onItemClick, onShopSale, onAddListing }) => {
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
       <div className="grid gap-6 lg:grid-cols-[1.3fr,0.7fr]">
@@ -18,10 +18,16 @@ const HeroSection = ({ language, t, newArrivals, onItemClick }) => {
               : 'پریمیم اشیاء، محدود وقت کی ڈیلز، اور آپ کی پسند کے مطابق نئی آمد دیکھیں۔'}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-blue-900 shadow hover:bg-blue-50">
+            <button
+              onClick={onShopSale}
+              className="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-blue-900 shadow hover:bg-blue-50 transition"
+            >
               {t.shopSale}
             </button>
-            <button className="flex items-center gap-2 rounded-lg border border-white/40 px-6 py-3 text-sm font-semibold text-white/90 hover:border-white hover:text-white">
+            <button
+              onClick={onAddListing}
+              className="flex items-center gap-2 rounded-lg border border-white/40 px-6 py-3 text-sm font-semibold text-white/90 hover:border-white hover:text-white transition"
+            >
               <Plus className="h-4 w-4" />
               {t.addListing}
             </button>

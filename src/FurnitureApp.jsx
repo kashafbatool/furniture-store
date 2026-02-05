@@ -11,6 +11,7 @@ import HeroSection from './components/HeroSection';
 import FeaturedCollections from './components/FeaturedCollections';
 import ProductGrid from './components/ProductGrid';
 import EmptyState from './components/EmptyState';
+import AddListingModal from './components/AddListingModal';
 
 // Import data and translations
 import { translations } from './utils/translations';
@@ -32,6 +33,7 @@ const FurnitureApp = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAddListingOpen, setIsAddListingOpen] = useState(false);
   const [filters, setFilters] = useState({
     minPrice: 0,
     maxPrice: 150000,
@@ -135,6 +137,18 @@ const FurnitureApp = () => {
     setSelectedItem(item);
   };
 
+  const handleShopSale = () => {
+    // Scroll to featured items section
+    const featuredSection = document.querySelector('#featured-items');
+    if (featuredSection) {
+      featuredSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleAddListing = () => {
+    setIsAddListingOpen(true);
+  };
+
   return (
     <div
       className="min-h-screen bg-gray-50"
@@ -166,6 +180,8 @@ const FurnitureApp = () => {
             t={t}
             newArrivals={newArrivals}
             onItemClick={handleViewDetails}
+            onShopSale={handleShopSale}
+            onAddListing={handleAddListing}
           />
 
           <CategoryTabs
@@ -182,7 +198,7 @@ const FurnitureApp = () => {
           <>
             <FeaturedCollections collections={featuredCollections} language={language} t={t} />
 
-            <section className="mb-10 grid gap-6 lg:grid-cols-[1fr,320px]">
+            <section id="featured-items" className="mb-10 grid gap-6 lg:grid-cols-[1fr,320px]">
               <div>
                 <div className="mb-6 flex items-center justify-between">
                   <h2 className="text-2xl font-bold">{t.featured}</h2>
@@ -335,6 +351,13 @@ const FurnitureApp = () => {
         t={t}
         onClose={() => setIsCartOpen(false)}
         onRemoveItem={handleRemoveFromCart}
+      />
+
+      <AddListingModal
+        isOpen={isAddListingOpen}
+        language={language}
+        t={t}
+        onClose={() => setIsAddListingOpen(false)}
       />
     </div>
   );

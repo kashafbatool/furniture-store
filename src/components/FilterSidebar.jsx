@@ -79,40 +79,52 @@ const FilterSidebar = ({
         </div>
         <div className="space-y-4 text-sm text-gray-600">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
               {t.priceRange}
             </p>
             <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min="0"
-                max="150000"
-                value={filters.minPrice}
-                onChange={(event) =>
-                  onFiltersChange({
-                    ...filters,
-                    minPrice: Number(event.target.value),
-                  })
-                }
-                className="w-full accent-blue-600"
-              />
-              <span className="text-xs font-semibold">PKR {filters.minPrice}</span>
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">
+                  {language === 'en' ? 'Min' : 'کم از کم'}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="150000"
+                  value={filters.minPrice}
+                  onChange={(event) =>
+                    onFiltersChange({
+                      ...filters,
+                      minPrice: Math.min(Number(event.target.value), filters.maxPrice),
+                    })
+                  }
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
+                  placeholder="0"
+                />
+              </div>
+              <span className="text-gray-400 mt-5">-</span>
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">
+                  {language === 'en' ? 'Max' : 'زیادہ سے زیادہ'}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="150000"
+                  value={filters.maxPrice}
+                  onChange={(event) =>
+                    onFiltersChange({
+                      ...filters,
+                      maxPrice: Math.max(Number(event.target.value), filters.minPrice),
+                    })
+                  }
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
+                  placeholder="150000"
+                />
+              </div>
             </div>
-            <div className="mt-2 flex items-center gap-3">
-              <input
-                type="range"
-                min="0"
-                max="150000"
-                value={filters.maxPrice}
-                onChange={(event) =>
-                  onFiltersChange({
-                    ...filters,
-                    maxPrice: Number(event.target.value),
-                  })
-                }
-                className="w-full accent-blue-600"
-              />
-              <span className="text-xs font-semibold">PKR {filters.maxPrice}</span>
+            <div className="mt-3 text-xs text-gray-500 text-center">
+              PKR {filters.minPrice.toLocaleString()} - PKR {filters.maxPrice.toLocaleString()}
             </div>
           </div>
           <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
